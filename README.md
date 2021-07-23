@@ -1,5 +1,16 @@
 # AKARI/Light Up Game Solver using Deep Neural Networks, Hill Climb, and Simulated Annealing Algorithms
 
+Should you find this repository as a useful tool for research or application, please kindly cite the original article [Optimized and autonomous machine learning framework for characterizing pores, particles, grains and grain boundaries in microstructural images](https://arxiv.org/abs/2101.06474)
+
+      @misc{sun2021shedding,
+	      title={Shedding some light on Light Up with Artificial Intelligence}, 
+	      author={Libo Sun and James Browning and Roberto Perera},
+	      year={2021},
+	      eprint={2107.10429},
+	      archivePrefix={arXiv},
+	      primaryClass={cs.AI}
+	} 
+
 We chose to focus on the [Light Up puzzle](https://en.wikipedia.org/wiki/Light_Up_(puzzle)), and solved it using hill climbing, simulated annealing, and a deep neural network.
 
 
