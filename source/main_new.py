@@ -1,9 +1,9 @@
-# Project:      COMP 6600/6606 Final Project: “Shedding Some Light on the Light Up Puzzle with Artificial Intelligence”
+# Project:      “Shedding Some Light on the Light Up Puzzle with Artificial Intelligence”
 # Program name: main.py
 # Author:       James Browning (jlb0181@auburn.edu), Robert Perera (rzp0063@auburn.edu),
 # and Libo Sun (lzs0101@auburn.edu)
 # Date created: October 8th, 2020
-# Purpose:      Use techniques learned in COMP 6600/6606 Artificial Intelligence to solve the light up puzzle.
+# Purpose:      Use techniques Artificial Intelligence to solve the light up puzzle.
 
 
 # import from project functions
