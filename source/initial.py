@@ -42,12 +42,13 @@ class Config:
     log_path = []
     solution_path = []
     log_file = []
-    solution_file = []
+    solution_file = []    
 
     def __init__(self, config_file):
         self.default = configparser.ConfigParser()
         self.default.sections()
         self.default.read(config_file)
+        self.config_file_name = config_file
         self.black_constraints = self.default["default"]["unique_optimize"].lower() in ['true']
         self.annealing = self.default["default"]["annealing"].lower() in ['true']
         self.annealing_temp = float(self.default["default"]["annealing_temp"])
@@ -92,12 +93,18 @@ class Config:
     def get_constant(self):
         return self.constance
 
+    def set_puzzle_size(self, row, col):
+        self.puzzle_row = row
+        self.puzzle_col = col
+    
+    def get_puzzle_size(self):
+        return self.puzzle_row, self.puzzle_col
+
     def set_filename(self, map_name):
+        self.map_file_name = map_name
         text_word = map_name.split('/')
         self.log_file = self.log_path + text_word[len(text_word) - 1]
         self.solution_file = self.solution_path + text_word[len(text_word) - 1]
-        # print(self.log_file)
-        # print(self.solution_file)
 
     def print_initialization(self):
 

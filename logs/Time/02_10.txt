@@ -1,0 +1,38 @@
+Map file:     puzzles/10.txt 
+Config file:  source/default2.cfg 
+--Puzzle size: (13, 13) 
+--Black Constraints: True 
+--Simulated Annealing: False 
+--Moving Action: True 
+
+Experiment time: (seconds) 
+22.44
+21.79
+21.54
+22.14
+21.44
+20.57
+21.12
+20.25
+22.03
+22.49
+22.36
+21.45
+22.42
+21.56
+21.5
+21.9
+22.56
+20.99
+21.3
+21.99
+21.91
+21.11
+21.45
+21.51
+22.43
+22.34
+21.64
+20.68
+20.71
+21.3
