@@ -1,0 +1,26 @@
+{
+  "random_seed": "time",
+  "number_runs": 30,
+  "termination_evaluation": 10000,
+  "termination_no_change": 500,
+  "black_cell_constraints": true,
+  "fitness_function": "penalty",
+  "repair_function": true,
+  "penalty_shrink_factor": 0.9,
+  "penalty_minus_factor": 2,
+  "self_adaptive": true,
+  "learning_rate": 1,
+  "initial_mutation_rate": 0.2,
+  "parent_selection": "stochastic_universal_sampling",
+  "survival_strategy": "plus",
+  "survival_selection": "k_tournament",
+  "k_tournament_parents": 10,
+  "k_tournament_survivals": 10,
+  "mu_size": 70,
+  "lambda_size": 50,
+  "log_file": "./logs/result_log_c2_red.txt",
+  "solution_file": "./solutions/solution_c2_red.txt"
+}
+
+
+
