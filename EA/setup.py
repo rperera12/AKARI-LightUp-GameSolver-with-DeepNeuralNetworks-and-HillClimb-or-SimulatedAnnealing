@@ -1,15 +1,12 @@
 # ------- all imports ------
 import configparser as prs
+from os import read
 import numpy as np
 import random
-import statistics
-import numpy
 from random import randint
 from copy import deepcopy
 from datetime import datetime
 
-from operator import itemgetter
-import json
 
 # -------- constants  --------
 
@@ -23,6 +20,7 @@ CELL_BLACK_FIVE = 5
 
 # the value indicates that a cell can't put a bulb due to a zero black cell adjacent.
 CELL_BULB_ZERO = 9
+CELL_BULB_BAN = 9
 
 # the value indicates that a white cell
 CELL_EMPTY = 6
@@ -34,6 +32,11 @@ CELL_BULB = 7
 CELL_LIGHT = 8
 
 class Board:
+    black_info = []
+    black_cells = []
+    banned_bulb = []
+    placed_bulb = []
+
     def __init__(self, config_file, board_file):        
 
         # set up all parameters for EA and system, by reading config file
@@ -41,6 +44,8 @@ class Board:
 
         # set up the board with black cells, by reading board file
         self.board_setup(board_file)
+
+        set_random_seed(self.random_seed)
 
     def ea_setup(self, config_file):   
 
@@ -72,41 +77,134 @@ class Board:
         self.k_tournament_survival = int(self.config["EA"]["k_tournament_survivals"])
 
 
-    # loading the map data of the problem
-    # return - array:
-    #   0:number of rows and columns
-    #   >0:black cell info of row/col/value
+    # loading the board data of the problem
+    # set up 3 variables:  
+    #   - self.board_grids
+    #   - self.banned_info
+    #   - self.empty_cells 
     def board_setup(self, board_file):
-        reading_file = []  # original file data read   
 
-        with open(board_file) as fp:
-            line = fp.readline()          
-            while line:
-                reading_file.append(line)
-                line = fp.readline()
+        reading_file = open(board_file, 'r')    
+        raw_data = reading_file.read().split("\n") 
 
         #  store first/second lines of data
-        self.board_col = int(reading_file[0])
-        self.board_row = int(reading_file[1])        
-
-        self.board_info = [[self.board_col, self.board_row]]
-
-        length = len(reading_file)
+        self.board_col = int(raw_data[0])
+        self.board_row = int(raw_data[1])        
 
         # store data from the 3rd lines
-        for i in range(2, length):
-            self.board_info.append([0, 0, 0])
-            message = reading_file[i].split(" ")
-            for j in range(0, len(message)):
-                self.board_info[i - 1][j] = int(message[j])
+        for i in range(2, len(raw_data)):
+            message = raw_data[i].split(' ')
+            try:
+                test_int = [int(x) for x in message]
+                self.black_info.append(test_int)
+            except ValueError:
+                pass
 
-        self.grids = np.full((self.board_row,self.board_col), CELL_EMPTY)
- 
-        for i in range(1, len(self.board_info)):
-            col = self.board_info[i][0] - 1
-            row = self.board_info[i][1] - 1
-            value = self.board_info[i][2]
-            self.grids[row][col] = value
+        # board_grids records very grid's information of the puzzle board
+        self.board_grids = np.full((self.board_row,self.board_col), CELL_EMPTY)
+
+        # create a list of the empty cells 
+        self.empty_cells = []
+        for i in range(self.board_row):
+            for j in range(self.board_col):
+                self.empty_cells.append([i, j])
+
+        # update board_grids and empty_cells
+        for x in self.black_info:
+            row = x[1]-1
+            col = x[0]-1
+            self.board_grids[row][col] = x[2]
+            self.empty_cells.remove([row, col])
+            self.black_cells.append([row, col, x[2]])
+
+        reading_file.close()
+
+    
+
+    # update the boards by black number 0, the adjacents can't have bulbs
+    # updated 3 variables:  
+    #   - self.board_grids
+    #   - self.banned_bulb
+    #   - self.empty_cells    
+    def set_black_zero(self):
+        for x in self.black_cells:
+            if x[2] == CELL_BLACK_ZERO:
+                row = x[0]
+                col = x[1]
+                self.empty_cells.remove([row, col])
+                adjacents = self.get_adjacent_empty_cells(row, col)
+                for y in adjacents:
+                    self.empty_cells.remove(y)
+                    self.banned_bulb.append(y)
+                    self.board_grids[row][col] = CELL_BULB_BAN
+
+    # update the boards by black cells at the unique placement
+    # updated 3 variables:  
+    #   - self.board_grids
+    #   - self.placed_bulb
+    #   - self.empty_cells   
+    def set_unique_bulbs(self):
+
+        # remove Black 0 and 5
+        blacks = deepcopy(self.black_cells)
+        for x in blacks:
+            if x[2] == CELL_BLACK_FIVE or x[2] == CELL_BLACK_ZERO:
+                blacks.remove(x)
+
+        # update the unique placment
+        termination = False
+        while not termination:
+            for x in blacks:                
+                empty_cell, bulb_cell = self.get_adjacent_black_and_empty(x[0], x[1])
+                if len(empty_cell) + len(bulb_cell) == x[2]:
+                    blacks.remove(x)
+                    for y in empty_cell:
+                        self.place_bulbs(y)
+
+    
+
+    # place the bulbs by unique placement
+    def place_bulbs(self, cells):
+        for x in cells:
+            self.empty_cells.remove(x)
+            self.placed_bulb.append(x)
+            self.board_grids[x[0]][x[1]] = CELL_BULB
+            self.update_shining(x)
+    
+
+    def update_shining(self, position):
+        pass
+
+
+
+
+
+    # get all empty cells
+    def get_adjacent_black_and_empty(self, row, col):
+        cells = get_adjacent_cells(row, col)
+        adj_empty = [] 
+        adj_bulb= []
+        for x in cells:
+            if x in self.empty_cells:
+                adj_empty.apend(x)
+            if x in self.placed_bulb:
+                adj_bulb.append(x)
+
+        
+        return adj_empty, adj_black
+    
+
+    # get all empty cells
+    def get_adjacent_empty_cells(self, row, col):
+        cells = get_adjacent_cells(row, col)
+        adj = [] 
+        for x in cells:
+            if x in self.empty_cells:
+                adj.apend(x)
+        
+        return adj
+
+
 
 
 # set random seed
@@ -115,28 +213,20 @@ def set_random_seed(seed):
     if seed == "time":
         random.seed(datetime.now())
     else:
-        seed_int = int(seed)
+        try:
+            seed_int = int(seed)
+        except ValueError:
+            seed_int = 1
         random.seed(seed_int)
 
 
 
-
-
-
-
-
-# load the black cells into the map
-# return - array: map_data (every rows * cols)with black cells value in it
-def load_map_data(updating_map, black_cells):
-    r_map = deepcopy(updating_map)  # data will be returned
-    numbers = len(black_cells)
-    for i in range(1, numbers):
-        col = black_cells[i][0] - 1
-        row = black_cells[i][1] - 1
-        value = black_cells[i][2]
-        r_map[row][col] = value
-    return r_map
-
+# get all adjacent cells on row and column, but they can be invalid cells
+def get_adjacent_cells(row, col):
+    return [[row, col+1], [row, col-1],
+            [row+1, col], [row-1, col]] 
+    
+    
 
 # initialize the map under validation
 # all cells will fill up by bulbs if only unique way to do it
