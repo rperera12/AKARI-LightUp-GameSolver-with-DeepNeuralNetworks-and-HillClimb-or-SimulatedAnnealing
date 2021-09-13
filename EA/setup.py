@@ -118,7 +118,6 @@ class Board:
             self.black_cells.append([row, col, x[2]])
 
         reading_file.close()
-
     
 
     # update the boards by black number 0, the adjacents can't have bulbs
@@ -169,18 +168,63 @@ class Board:
             self.empty_cells.remove(x)
             self.placed_bulb.append(x)
             self.board_grids[x[0]][x[1]] = CELL_BULB
-            self.update_shining(x)
+            self.setup_shining(x)
     
 
-    def update_shining(self, position):
-        pass
+    # set shining cells by inserting a bulb
+    # update:
+    #   - self.board_grids 
+    #   - self.empty_cells
+    def setup_shining(self, pos):
+        shining_cell = []
+
+        # go right:
+        for i in range(pos[1]+1, self.board_col):
+            p = [pos[0], i]
+            if p in self.black_cells:
+                break
+            shining_cell.append(p)
+
+        # go up:
+        for i in range(pos[0]+1, self.board_col):
+            p = [i, pos[1]]
+            if p in self.black_cells:
+                break
+            shining_cell.append(p)
+        
+
+        # go right:
+        i = pos[1] - 1
+        while True:            
+            p = [pos[0], i]
+            if i < 0 or p in self.black_cells:
+                break
+            shining_cell.append(p)
+            i -= 1
+
+        # go down:
+        i = pos[0] - 1
+        while True:            
+            p = [i, pos[1]]
+            if i < 0 or p in self.black_cells:
+                break
+            shining_cell.append(p)
+            i -= 1
+        
+        # update:  self.board_grids and self.empty_cells
+        self.update_by_shining(shining_cell)
 
 
+    #  shining cell update:  self.board_grids and self.empty_cells
+    def update_by_shining(self, shinings):
+        for c in shinings:
+            if c in self.empty_cells:
+                self.board_grids[c[0][1]] = CELL_LIGHT            
+                self.empty_cells.remove(c)
 
-
-
+        
     # get all empty cells
-    def get_adjacent_black_and_empty(self, row, col):
+    def get_adjacent_black_and_empty(self, row, col) -> tuple:
         cells = get_adjacent_cells(row, col)
         adj_empty = [] 
         adj_bulb= []
@@ -189,19 +233,17 @@ class Board:
                 adj_empty.apend(x)
             if x in self.placed_bulb:
                 adj_bulb.append(x)
-
         
-        return adj_empty, adj_black
+        return adj_empty, adj_bulb
     
 
     # get all empty cells
-    def get_adjacent_empty_cells(self, row, col):
+    def get_adjacent_empty_cells(self, row, col) -> list:
         cells = get_adjacent_cells(row, col)
         adj = [] 
         for x in cells:
             if x in self.empty_cells:
-                adj.apend(x)
-        
+                adj.apend(x)        
         return adj
 
 
@@ -227,158 +269,3 @@ def get_adjacent_cells(row, col):
             [row+1, col], [row-1, col]] 
     
     
-
-# initialize the map under validation
-# all cells will fill up by bulbs if only unique way to do it
-def initialize_validation_map(puzzle_map, rows, cols):
-    # set Zero adjacent constraints
-    for i in range(0, rows):
-        for j in range(0, cols):
-            if puzzle_map[i][j] == CELL_BLACK_ZERO:
-                if i < rows - 1 and puzzle_map[i + 1][j] == CELL_EMPTY:
-                    puzzle_map[i + 1][j] = CELL_BULB_ZERO
-                if j < cols - 1 and puzzle_map[i][j + 1] == CELL_EMPTY:
-                    puzzle_map[i][j + 1] = CELL_BULB_ZERO
-                if i > 0 and puzzle_map[i - 1][j] == CELL_EMPTY:
-                    puzzle_map[i - 1][j] = CELL_BULB_ZERO
-                if j > 0 and puzzle_map[i][j - 1] == CELL_EMPTY:                
-                        puzzle_map[i][j - 1] = CELL_BULB_ZERO
-
-    # validating all unique bulbs
-    new_bulb = True
-    while new_bulb:
-        new_bulb = False
-        for i in range(0, rows):
-            for j in range(0, cols):
-                if 0 < puzzle_map[i][j] < CELL_BLACK_FIVE:
-                    validating(puzzle_map, i, j, new_bulb)
-                    
-
-    return puzzle_map
-
-
-
-
-def validating(pm, i, j, new_bulb):
-    row = len(pm)
-    col = len(pm[0])
-    grids = []
-    cell_empty = False
-    if i < row - 1:
-        if pm[i + 1][j] == CELL_EMPTY:
-            cell_empty = True
-            grids.append([i + 1, j])
-        elif pm[i + 1][j] == CELL_BULB:
-            grids.append([i + 1, j])
-    if j < col - 1:
-        if pm[i][j + 1] == CELL_EMPTY:
-            cell_empty = True
-            grids.append([i, j + 1])
-        elif pm[i][j + 1] == CELL_BULB:
-            grids.append([i, j + 1])
-    if i > 0:
-        if pm[i - 1][j] == CELL_EMPTY:
-            cell_empty = True
-            grids.append([i - 1, j])
-        elif pm[i - 1][j] == CELL_BULB:
-            grids.append([i - 1, j])
-    if j > 0:
-        if pm[i][j - 1] == CELL_EMPTY:
-            cell_empty = True
-            grids.append([i, j - 1])
-        elif pm[i][j - 1] == CELL_BULB:
-            grids.append([i, j - 1])
-    if pm[i][j] == len(grids):
-        for x in range(0, len(grids)):
-            pm[grids[x][0]][grids[x][1]] = CELL_BULB
-
-
-        # set cells lighted
-        set_lighted = check_bulb_shining(pm, row, col)
-
-        if set_lighted:
-            print("Error in lightening white cells")
-            # breakpoint()
-
-        # ask for more loop in while since a new bulb has been set
-        if cell_empty:
-            new_bulb = True
-
-    # check the empty cell which will be set as can't put a bulb in
-    # because the number of black cell also reaches the requirement
-    # only active when a new bulb has been set
-    if new_bulb and 0 < pm[i][j] < CELL_BLACK_FOUR:
-        cell_empty_adjacent = []
-        cell_bulb_adjacent = 0
-        if i < row - 1:
-            if pm[i + 1][j] == CELL_EMPTY:
-                cell_empty_adjacent.append([i + 1, j])
-            elif pm[i + 1][j] == CELL_BULB:
-                cell_bulb_adjacent += 1
-        if j < col - 1:
-            if pm[i][j + 1] == CELL_EMPTY:
-                cell_empty_adjacent.append([i, j + 1])
-            elif pm[i][j + 1] == CELL_BULB:
-                cell_bulb_adjacent += 1
-        if i > 0:
-            if pm[i - 1][j] == CELL_EMPTY:
-                cell_empty_adjacent.append([i - 1, j])
-            elif pm[i - 1][j] == CELL_BULB:
-                cell_bulb_adjacent += 1
-        if j > 0:
-            if pm[i][j - 1] == CELL_EMPTY:
-                cell_empty_adjacent.append([i, j - 1])
-            elif pm[i][j - 1] == CELL_BULB:
-                cell_bulb_adjacent += 1
-
-        if cell_bulb_adjacent and len(cell_empty_adjacent) and pm[i][j] == cell_bulb_adjacent:
-            for x in range(0, len(cell_empty_adjacent)):
-                row_update = cell_empty_adjacent[x][0]
-                col_update = cell_empty_adjacent[x][1]
-                pm[row_update][col_update] = CELL_BULB_ZERO
-
-
-# check all white cells which has a bulb in it
-# return - True: no two bulbs shine on each other
-# return - False: at least two bulbs shine on each other
-# @@ note @@ : puzzle_map will be updated by lighted info
-def check_bulb_shining(puzzle_map, row, col):
-    # validation = True
-    # check the bulbs by every row
-    conflict = 0
-    for i in range(0, row):
-        start = 0
-        bulb = 0
-        for j in range(0, col):
-            cell = puzzle_map[i][j]
-            if cell == CELL_BULB:
-                bulb += 1
-            if (cell < CELL_EMPTY) or (j == col - 1):
-                if bulb > 1:
-                    conflict += bulb - 1
-                if bulb:
-                    for x in range(start, j + 1):
-                        if puzzle_map[i][x] == CELL_EMPTY or puzzle_map[i][x] == CELL_BULB_ZERO:
-                            puzzle_map[i][x] = CELL_LIGHT
-                    bulb = 0
-                start = j
-
-    # check the bulbs by every column
-    for i in range(0, col):
-        start = 0
-        bulb = 0
-        for j in range(0, row):
-            cell = puzzle_map[j][i]
-            if cell == CELL_BULB:
-                bulb += 1
-            if (cell < CELL_EMPTY) or (j == row - 1):
-                if bulb > 1:
-                    conflict += bulb - 1
-                if bulb:
-                    for x in range(start, j + 1):
-                        if puzzle_map[x][i] == CELL_EMPTY or puzzle_map[x][i] == CELL_BULB_ZERO:
-                            puzzle_map[x][i] = CELL_LIGHT
-                    bulb = 0
-                start = j
-
-    return conflict
