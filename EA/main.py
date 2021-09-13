@@ -769,10 +769,8 @@ def config_argv():
 
 
 # ======== Programming Starts here:  Main Function =========
-
 def main():
-
-
+    
     if len(sys.argv) != 3:
         print("Error")
         sys.exit(0)
@@ -784,7 +782,19 @@ def main():
 
     ea = setup.Board(config_file, problem_file)
 
+    for i in range(len(ea.board_grids)):
+        print(ea.board_grids[len(ea.board_grids) - i - 1])
+
     
+    ea.set_black_zero()
+    ea.set_unique_bulbs()
+
+
+    print("After Insert unique bulbs.....")
+    for i in range(len(ea.board_grids)):
+        print(ea.board_grids[len(ea.board_grids) - i - 1])
+        
+       
 
     exit(0)
 

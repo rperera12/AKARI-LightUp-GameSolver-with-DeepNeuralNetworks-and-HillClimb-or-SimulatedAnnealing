@@ -34,6 +34,7 @@ CELL_LIGHT = 8
 class Board:
     black_info = []
     black_cells = []
+    black_cells_no_value = []
     banned_bulb = []
     placed_bulb = []
 
@@ -43,7 +44,7 @@ class Board:
         self.ea_setup(config_file)
 
         # set up the board with black cells, by reading board file
-        self.board_setup(board_file)
+        self.setup_board(board_file)
 
         set_random_seed(self.random_seed)
 
@@ -82,7 +83,7 @@ class Board:
     #   - self.board_grids
     #   - self.banned_info
     #   - self.empty_cells 
-    def board_setup(self, board_file):
+    def setup_board(self, board_file):
 
         reading_file = open(board_file, 'r')    
         raw_data = reading_file.read().split("\n") 
@@ -116,6 +117,7 @@ class Board:
             self.board_grids[row][col] = x[2]
             self.empty_cells.remove([row, col])
             self.black_cells.append([row, col, x[2]])
+            self.black_cells_no_value.append([row, col])
 
         reading_file.close()
     
@@ -130,12 +132,18 @@ class Board:
             if x[2] == CELL_BLACK_ZERO:
                 row = x[0]
                 col = x[1]
-                self.empty_cells.remove([row, col])
+                # self.empty_cells.remove([row, col])
                 adjacents = self.get_adjacent_empty_cells(row, col)
                 for y in adjacents:
                     self.empty_cells.remove(y)
                     self.banned_bulb.append(y)
-                    self.board_grids[row][col] = CELL_BULB_BAN
+                    self.board_grids[y[0]][y[1]] = CELL_BULB_BAN
+
+        
+        print("After adding ZERO Balck...")
+        for i in range(len(self.board_grids)):
+            print(self.board_grids[len(self.board_grids) - i - 1])
+
 
     # update the boards by black cells at the unique placement
     # updated 3 variables:  
@@ -153,22 +161,24 @@ class Board:
         # update the unique placment
         termination = False
         while not termination:
+            termination = True
             for x in blacks:                
                 empty_cell, bulb_cell = self.get_adjacent_black_and_empty(x[0], x[1])
                 if len(empty_cell) + len(bulb_cell) == x[2]:
+                    termination = False
                     blacks.remove(x)
                     for y in empty_cell:
                         self.place_bulbs(y)
-
     
 
     # place the bulbs by unique placement
-    def place_bulbs(self, cells):
-        for x in cells:
-            self.empty_cells.remove(x)
-            self.placed_bulb.append(x)
-            self.board_grids[x[0]][x[1]] = CELL_BULB
-            self.setup_shining(x)
+    def place_bulbs(self, bulb):
+        # for x in cells:
+        if bulb in self.empty_cells:
+            self.empty_cells.remove(bulb)
+        self.placed_bulb.append(bulb)
+        self.board_grids[bulb[0]][bulb[1]] = CELL_BULB
+        self.setup_shining(bulb)
     
 
     # set shining cells by inserting a bulb
@@ -181,23 +191,22 @@ class Board:
         # go right:
         for i in range(pos[1]+1, self.board_col):
             p = [pos[0], i]
-            if p in self.black_cells:
+            if p in self.black_cells_no_value:
                 break
             shining_cell.append(p)
 
         # go up:
         for i in range(pos[0]+1, self.board_col):
             p = [i, pos[1]]
-            if p in self.black_cells:
+            if p in self.black_cells_no_value:
                 break
-            shining_cell.append(p)
-        
+            shining_cell.append(p)        
 
         # go right:
         i = pos[1] - 1
         while True:            
             p = [pos[0], i]
-            if i < 0 or p in self.black_cells:
+            if i < 0 or p in self.black_cells_no_value:
                 break
             shining_cell.append(p)
             i -= 1
@@ -206,7 +215,7 @@ class Board:
         i = pos[0] - 1
         while True:            
             p = [i, pos[1]]
-            if i < 0 or p in self.black_cells:
+            if i < 0 or p in self.black_cells_no_value:
                 break
             shining_cell.append(p)
             i -= 1
@@ -219,8 +228,10 @@ class Board:
     def update_by_shining(self, shinings):
         for c in shinings:
             if c in self.empty_cells:
-                self.board_grids[c[0][1]] = CELL_LIGHT            
+                self.board_grids[c[0]][c[1]] = CELL_LIGHT            
                 self.empty_cells.remove(c)
+            elif c in self.banned_bulb:
+                self.board_grids[c[0]][c[1]] = CELL_LIGHT  
 
         
     # get all empty cells
@@ -230,7 +241,7 @@ class Board:
         adj_bulb= []
         for x in cells:
             if x in self.empty_cells:
-                adj_empty.apend(x)
+                adj_empty.append(x)
             if x in self.placed_bulb:
                 adj_bulb.append(x)
         
@@ -243,7 +254,7 @@ class Board:
         adj = [] 
         for x in cells:
             if x in self.empty_cells:
-                adj.apend(x)        
+                adj.append(x)        
         return adj
 
 
