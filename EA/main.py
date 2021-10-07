@@ -9,10 +9,16 @@ from copy import deepcopy
 from datetime import datetime
 
 from operator import itemgetter
+
 import json
+
+from numpy.lib import utils
 
 
 import setup
+
+
+import draw
 
 # -------- constants  --------
 
@@ -793,8 +799,13 @@ def main():
     print("After Insert unique bulbs.....")
     for i in range(len(ea.board_grids)):
         print(ea.board_grids[len(ea.board_grids) - i - 1])
+
+    
+    board = draw.DrawBoard(ea.board_grids)
+    board.show()
         
        
+    
 
     exit(0)
 

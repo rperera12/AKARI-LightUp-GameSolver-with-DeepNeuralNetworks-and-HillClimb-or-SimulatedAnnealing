@@ -151,7 +151,6 @@ class Board:
     #   - self.placed_bulb
     #   - self.empty_cells   
     def set_unique_bulbs(self):
-
         # remove Black 0 and 5
         blacks = deepcopy(self.black_cells)
         for x in blacks:
