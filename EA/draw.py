@@ -39,7 +39,9 @@ class DrawBoard:
         # add text as white color
         if number < stp.CELL_BLACK_FIVE:
             self.app.fill(255)
-            self.app.text(str(number), x+w/2 - self.text_size/2, y+w/2+self.text_size/2)
+            self.app.text(str(number), 
+                            x + int(w/2) - int(self.text_size/2), 
+                            y + int(w/2) + int(self.text_size/2))
 
     # show plain white cell
     def white(self, x, y):
@@ -89,7 +91,7 @@ class DrawBoard:
 
             # move down
             y += self.width 
-            # rest to left edge
+            # reset to left edge
             x = 0 
         
         # show the frame
