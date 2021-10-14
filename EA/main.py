@@ -1,23 +1,13 @@
 # ------- all imports ------
-import math
 import sys
-import random
-import statistics
-import numpy
 from random import randint
 from copy import deepcopy
-from datetime import datetime
 
 from operator import itemgetter
 
-import json
 
-from numpy.lib import utils
-
-
+# ---- imports customized utilities ----
 import setup
-
-
 import draw
 
 # -------- constants  --------
@@ -55,6 +45,9 @@ def main():
     
     ea.set_black_zero()
     ea.set_unique_bulbs()
+    
+    print(f"\n {len(ea.empty_cells)} Empty cells! ")
+    print(ea.empty_cells)
 
 
     print("After Insert unique bulbs.....")

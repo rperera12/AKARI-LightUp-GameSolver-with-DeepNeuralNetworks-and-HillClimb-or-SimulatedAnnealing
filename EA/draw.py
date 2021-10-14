@@ -3,10 +3,8 @@ import processing_py as psi
 import setup as stp
 
 # one cell width, pixel
-CELL_WIDTH = 100
+CELL_WIDTH = 50
 TEXT_SIZE = 24
-
-
 
 class DrawBoard:
 
