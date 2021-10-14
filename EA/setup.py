@@ -34,6 +34,7 @@ CELL_LIGHT = 8
 class Board:
     black_info = []
     black_cells = []
+    black_cells_unsatisfied = []
     black_cells_no_value = []
     banned_bulb = []
     placed_bulb = []
@@ -118,8 +119,12 @@ class Board:
             self.empty_cells.remove([row, col])
             self.black_cells.append([row, col, x[2]])
             self.black_cells_no_value.append([row, col])
+            
+
+        
 
         reading_file.close()
+        
     
 
     # update the boards by black number 0, the adjacents can't have bulbs
@@ -150,6 +155,7 @@ class Board:
     #   - self.board_grids
     #   - self.placed_bulb
     #   - self.empty_cells   
+    #   - self.black_cells_unsatisfied
     def set_unique_bulbs(self):
         # remove Black 0 and 5
         blacks = deepcopy(self.black_cells)
@@ -167,11 +173,15 @@ class Board:
                     termination = False
                     blacks.remove(x)
                     for y in empty_cell:
-                        self.place_bulbs(y)
+                        self.place_unique_bulbs(y)
+
+        # update the unsatisfied black cells   
+        self.black_cells_unsatisfied = blacks
+            
     
 
     # place the bulbs by unique placement
-    def place_bulbs(self, bulb):
+    def place_unique_bulbs(self, bulb):
         # for x in cells:
         if bulb in self.empty_cells:
             self.empty_cells.remove(bulb)
@@ -255,6 +265,12 @@ class Board:
             if x in self.empty_cells:
                 adj.append(x)        
         return adj
+
+    
+    # set empty cell probability 
+    def empty_cell_prob(self):
+        pass
+
 
 
 
