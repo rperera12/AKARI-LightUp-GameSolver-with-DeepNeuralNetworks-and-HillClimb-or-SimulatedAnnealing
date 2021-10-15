@@ -1,9 +1,10 @@
 
+from numpy import number
 import processing_py as psi
 import setup as stp
 
 # one cell width, pixel
-CELL_WIDTH = 50
+CELL_WIDTH = 100
 TEXT_SIZE = 24
 
 class DrawBoard:
@@ -62,27 +63,46 @@ class DrawBoard:
         self.app.fill(102, 102, 255)
         self.app.rect(x, y, w, w)
 
+    # draw a black block, with number
+    def four_digit(self, x, y, number):
+        # draw black cell first
+        w = self.width
+        # add text as white color
+        if number < stp.CELL_BLACK_FIVE:
+            self.app.fill(66, 96, 245)
+            self.app.text(str(number), 
+                            x + int(w/2) - int(self.text_size), 
+                            y + int(w/2) + int(self.text_size))
+
 
     # show the game board
-    def show(self):
+    def show(self, probs):
         x, y = 0, 0
-        for i in self.board:
-            for j in i:
-                if j <= stp.CELL_BLACK_FIVE:
-                    self.black(x, y, j)
+        for i in range(len(self.board)):            
+            for j in range(len(self.board[i])):
+                v = self.board[i][j]
+                if v <= stp.CELL_BLACK_FIVE:
+                    self.black(x, y, v)
                 else:
                     # white cell
                     self.white(x, y)
                     # cell has a bulb and lighted
-                    if j == stp.CELL_BULB:
+                    if v == stp.CELL_BULB:
                         self.light(x, y)
                         self.bulb(x, y)
                     # lighted cells
-                    elif j == stp.CELL_LIGHT:
+                    elif v == stp.CELL_LIGHT:
                         self.light(x, y)
                     # bulb banned cells
-                    elif j == stp.CELL_BULB_BAN:
+                    elif v == stp.CELL_BULB_BAN:
                         self.ban(x, y)
+                    
+                    else:                      
+
+                        index = probs["axis"].index([i,j])
+                        prob = probs["prob"][index]
+                        self.four_digit(x, y, prob)
+
             
                 # move to right
                 x += self.width

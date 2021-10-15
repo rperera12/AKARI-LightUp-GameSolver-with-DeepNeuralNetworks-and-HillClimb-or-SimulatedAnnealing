@@ -119,10 +119,7 @@ class Board:
             self.empty_cells.remove([row, col])
             self.black_cells.append([row, col, x[2]])
             self.black_cells_no_value.append([row, col])
-            
-
         
-
         reading_file.close()
         
     
@@ -159,7 +156,7 @@ class Board:
     def set_unique_bulbs(self):
         # remove Black 0 and 5
         blacks = deepcopy(self.black_cells)
-        for x in blacks:
+        for x in self.black_cells:
             if x[2] == CELL_BLACK_FIVE or x[2] == CELL_BLACK_ZERO:
                 blacks.remove(x)
 
@@ -177,6 +174,7 @@ class Board:
 
         # update the unsatisfied black cells   
         self.black_cells_unsatisfied = blacks
+    
             
     
 
@@ -268,8 +266,39 @@ class Board:
 
     
     # set empty cell probability 
-    def empty_cell_prob(self):
-        pass
+    def set_insertable_cell_prob(self):
+        self.insertable_cell_prob = {
+            "axis":[],
+            "prob": []
+        }
+
+        # set probablities for adjacent cells of black cells
+        for i in self.black_cells_unsatisfied:
+            adj = get_valid_adjacent_cells(i, self.empty_cells)
+            allowed_adjacent_bulbs = i[2]
+
+            # calculate the adjacents mean value
+            try:
+                prob_mean = round( allowed_adjacent_bulbs / len(adj), 2)
+            except ValueError:
+                prob_mean = 0.5
+            
+            if allowed_adjacent_bulbs == 5:
+                print(f"Error at FIVE BLACE at {i}")
+
+
+            for j in adj:
+                if j in self.empty_cells:
+                    self.insertable_cell_prob["axis"].append(j)
+                    self.insertable_cell_prob["prob"].append(round(random.uniform(prob_mean-0.25, prob_mean+0.25),2))
+        
+        for i in self.empty_cells:
+            if i not in self.insertable_cell_prob["axis"]:
+                self.insertable_cell_prob["axis"].append(i)
+                self.insertable_cell_prob["prob"].append(round(random.uniform(0, 0.20),2))
+        
+        
+
 
 
 
@@ -294,4 +323,11 @@ def get_adjacent_cells(row, col):
     return [[row, col+1], [row, col-1],
             [row+1, col], [row-1, col]] 
     
+# get all valid adjacent cells 
+def get_valid_adjacent_cells(pos, empty_cells) -> list:
+    adjs = get_adjacent_cells(row=pos[0], col=pos[1])
+    for i in adjs:
+        if i not in empty_cells:
+            adjs.remove(i)
+    return adjs
     

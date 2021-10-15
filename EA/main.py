@@ -54,9 +54,9 @@ def main():
     for i in range(len(ea.board_grids)):
         print(ea.board_grids[len(ea.board_grids) - i - 1])
 
-    
+    ea.set_insertable_cell_prob()
     board = draw.DrawBoard(ea.board_grids)
-    board.show()
+    board.show(ea.insertable_cell_prob)
         
        
     
